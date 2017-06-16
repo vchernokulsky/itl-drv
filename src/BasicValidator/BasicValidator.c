@@ -13,6 +13,7 @@ unsigned long _sess_payout_amount = 0;
 unsigned int  _is_sess_processing = 1;
 
 const unsigned int _notes_define[] = {10, 50, 100, 500, 1000, 5000};
+unsigned int _notes_table[12];
 
 void ProcessBilling(unsigned long event_data)
 {
@@ -163,6 +164,7 @@ void ProcessStoredNotes(SSP_COMMAND_SETUP ssp_setup, unsigned int nChannels)
             return;
 
         }
+        _notes_table[i] = amount;
         printf("%i RUB - %i\n", _notes_define[i], amount);
         fprintf(file, "%i;%i\n", _notes_define[i], amount);
     }
@@ -188,6 +190,7 @@ void SaveUnitSettings(SSP_SETUP_REQUEST_DATA data)
 void RunValidator(SSP_PORT port, const unsigned char ssp_address)
 {
 	unsigned int ssp_response = 0x00;
+	unsigned char route = 0x00;
 
     SSP_COMMAND_SETUP ssp_setup;
     SSP_POLL_DATA poll;
@@ -226,8 +229,8 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
         return;
     }
 
-    //set the inhibits (enable all note acceptance)
-	if (ssp_set_inhibits(ssp_setup,0xFF,0xFF) != SSP_RESPONSE_OK)
+    //set the inhibits (disable: 10, 5000 RUB notes)
+	if (ssp_set_inhibits(ssp_setup,0x1E,0xFF) != SSP_RESPONSE_OK)
 	{
 	    printf("Inhibits Failed\n");
         return;
@@ -253,13 +256,41 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
     printf("Read stored notes\n");
     ProcessStoredNotes(ssp_setup, 6);
 
-	ssp_response = ssp_set_routing(ssp_setup, 10000, 0x00);
+    // route 100, 500 -> SmartPayout
+	ssp_response = ssp_set_routing(ssp_setup, 50*100, 0x01);
 	if(ssp_response != SSP_RESPONSE_OK)
 	{
 		printf("SmartPayout routing failed\n");
 		printf("SSP_RESPONSE: 0x%02X\n", ssp_response);
 		return;
 	}
+
+    route = _notes_table[2] >= NOTE_100_RUB_COUNT ? 0x01 : 0x00;
+	ssp_response = ssp_set_routing(ssp_setup, 100*100, route);
+	if(ssp_response != SSP_RESPONSE_OK)
+	{
+		printf("SmartPayout routing failed\n");
+		printf("SSP_RESPONSE: 0x%02X\n", ssp_response);
+		return;
+	}
+
+    route = _notes_table[3] >= NOTE_500_RUB_COUNT ? 0x01 : 0x00;
+	ssp_response = ssp_set_routing(ssp_setup, 500*100, route);
+	if(ssp_response != SSP_RESPONSE_OK)
+	{
+		printf("SmartPayout routing failed\n");
+		printf("SSP_RESPONSE: 0x%02X\n", ssp_response);
+		return;
+	}
+
+	ssp_response = ssp_set_routing(ssp_setup, 1000*100, 0x01);
+	if(ssp_response != SSP_RESPONSE_OK)
+	{
+		printf("SmartPayout routing failed\n");
+		printf("SSP_RESPONSE: 0x%02X\n", ssp_response);
+		return;
+	}
+
 
 	//interrupt loop by global flag
 	while (_is_sess_processing)
@@ -289,6 +320,7 @@ int main(int argc, char *argv[])
     int ssp_address;
 	SSP_PORT port;
 
+	memset(_notes_table, 0x00, sizeof(unsigned int) * 12);
 
     //check for command line arguments - first is port, second is ssp address
 	if (argc <= 2)

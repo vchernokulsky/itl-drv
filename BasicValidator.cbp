@@ -17,6 +17,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-lpthread" />
+					<Add library="src/lib/bin/libitlssp.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -35,11 +36,6 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-			<Option compile="0" />
-			<Option link="0" />
-		</Unit>
 		<Unit filename="src/BasicValidator/BasicValidator.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
@@ -68,21 +64,30 @@
 		<Unit filename="src/inc/ssp_defines.h" />
 		<Unit filename="src/lib/Encryption.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/lib/Encryption.h" />
 		<Unit filename="src/lib/ITLSSPProc.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/lib/ITLSSPProc.h" />
 		<Unit filename="src/lib/Random.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
 		</Unit>
 		<Unit filename="src/lib/Random.h" />
 		<Unit filename="src/lib/SSPComs.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/lib/SSPDownload.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/lib/defs.h" />
 		<Unit filename="src/lib/enctest.c">
@@ -92,10 +97,14 @@
 		</Unit>
 		<Unit filename="src/lib/serialfunc.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Unit filename="src/lib/serialfunc.h" />
 		<Unit filename="src/lib/ssp_commands.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
 		</Unit>
 		<Extensions>
 			<envvars />

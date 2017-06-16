@@ -1,0 +1,134 @@
+# depslib dependency file v1.0
+1497547038 source:/home/stuff/projects/itl-drv/src/BasicValidator/billing.c
+	<stdio.h>
+	<stdlib.h>
+	<memory.h>
+	"billing.h"
+	"common.h"
+
+1497611492 /home/stuff/projects/itl-drv/src/BasicValidator/billing.h
+	"../inc/ssp_commands.h"
+
+1497265185 /home/stuff/projects/itl-drv/src/inc/ssp_commands.h
+	"../inc/SSPComs.h"
+
+1496736626 /home/stuff/projects/itl-drv/src/inc/SSPComs.h
+	"itl_types.h"
+	"ssp_defines.h"
+
+1496736626 /home/stuff/projects/itl-drv/src/inc/itl_types.h
+
+1496736626 /home/stuff/projects/itl-drv/src/inc/ssp_defines.h
+
+1497535571 /home/stuff/projects/itl-drv/src/BasicValidator/common.h
+
+1497547159 source:/home/stuff/projects/itl-drv/src/BasicValidator/main.c
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	"common.h"
+	"billing.h"
+	"validator.h"
+	"smart_payout.h"
+
+1497533330 /home/stuff/projects/itl-drv/src/BasicValidator/validator.h
+	"../inc/ssp_commands.h"
+
+1497537905 /home/stuff/projects/itl-drv/src/BasicValidator/smart_payout.h
+
+1497611792 source:/home/stuff/projects/itl-drv/src/BasicValidator/smart_payout.c
+	<stdio.h>
+	"../inc/ssp_commands.h"
+
+1497543974 source:/home/stuff/projects/itl-drv/src/BasicValidator/validator.c
+	"validator.h"
+	<stdio.h>
+
+1496736626 source:/home/stuff/projects/itl-drv/src/lib/Encryption.c
+	"../inc/itl_types.h"
+	<stdlib.h>
+	"Encryption.h"
+
+1496736626 /home/stuff/projects/itl-drv/src/lib/Encryption.h
+	<assert.h>
+	"../inc/itl_types.h"
+
+1497264958 source:/home/stuff/projects/itl-drv/src/lib/ITLSSPProc.c
+	"../inc/ssp_defines.h"
+	<stdlib.h>
+	<unistd.h>
+	<stdio.h>
+	<pthread.h>
+	"ITLSSPProc.h"
+	"Random.h"
+	"Encryption.h"
+
+1496736626 /home/stuff/projects/itl-drv/src/lib/ITLSSPProc.h
+	"../inc/SSPComs.h"
+	"../inc/itl_types.h"
+	<time.h>
+
+1496736626 /home/stuff/projects/itl-drv/src/lib/Random.h
+
+1496736626 source:/home/stuff/projects/itl-drv/src/lib/Random.c
+	"../inc/itl_types.h"
+	<stdlib.h>
+	"Random.h"
+
+1496736626 source:/home/stuff/projects/itl-drv/src/lib/serialfunc.c
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	<fcntl.h>
+	<errno.h>
+	<termios.h>
+	<sys/ioctl.h>
+	"../inc/itl_types.h"
+	"serialfunc.h"
+
+1496736626 /home/stuff/projects/itl-drv/src/lib/serialfunc.h
+
+1497264618 source:/home/stuff/projects/itl-drv/src/lib/ssp_commands.c
+	"ITLSSPProc.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	"Random.h"
+	"Encryption.h"
+	"serialfunc.h"
+	<pthread.h>
+	"../inc/ssp_commands.h"
+
+1496736626 source:/home/stuff/projects/itl-drv/src/lib/SSPComs.c
+	<sys/time.h>
+	<time.h>
+	"../inc/SSPComs.h"
+	"../inc/ssp_defines.h"
+	"Encryption.h"
+	"serialfunc.h"
+	"ITLSSPProc.h"
+
+1496736626 source:/home/stuff/projects/itl-drv/src/lib/SSPDownload.c
+	"ITLSSPProc.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<unistd.h>
+	"Random.h"
+	"Encryption.h"
+	"../inc/SSPComs.h"
+	"serialfunc.h"
+	"../inc/ssp_defines.h"
+	<pthread.h>
+
+1497532636 source:/home/stuff/projects/itl-drv/src/BasicValidator/BasicValidator.c
+	"../inc/ssp_commands.h"
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<string.h>
+	"BasicValidator.h"
+
+1497264710 /home/stuff/projects/itl-drv/src/BasicValidator/BasicValidator.h
+

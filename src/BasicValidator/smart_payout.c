@@ -61,7 +61,7 @@ void SetupPayout(SSP_COMMAND_SETUP ssp_setup)
 	printf("Read stored notes\n");
 	ProcessStoredNotes(ssp_setup, 6);
 
-	ssp_response = ssp_set_routing(ssp_setup, value, route);
+	ssp_response = ssp_set_routing(ssp_setup, 10000, 0x00);
 	if(ssp_response != SSP_RESPONSE_OK)
 	{
 		printf("SmartPayout routing failed\n");

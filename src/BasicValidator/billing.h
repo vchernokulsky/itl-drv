@@ -1,7 +1,8 @@
 #ifndef BILLING_H_INCLUDED
 #define BILLING_H_INCLUDED
 
-#include "../inc/SSPComs.h"
+//#include "../inc/SSPComs.h"
+#include "../inc/ssp_commands.h"
 
 void ParsePoll(SSP_POLL_DATA * poll);
 void StartPayout(SSP_COMMAND_SETUP ssp_setup);
