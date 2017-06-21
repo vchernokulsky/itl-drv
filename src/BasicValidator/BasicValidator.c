@@ -7,21 +7,67 @@
 
 #include "BasicValidator.h"
 
+SSP_COMMAND_SETUP _ssp_setup;
 
+int _sess_debt = 0;
 unsigned long _sess_amount = 0;
+unsigned long _sess_cost   = 0;
+
 unsigned long _sess_payout_amount = 0;
 unsigned int  _is_sess_processing = 1;
 
-const unsigned int _notes_define[] = {10, 50, 100, 500, 1000, 5000};
-unsigned int _notes_table[12];
+
+const unsigned int _notes_define[] = {10,   50,   100,  500, 1000,  5000};
+
+unsigned int _notes_table[6];
+unsigned int _notes_route[] =  {0x01, 0x01, 0x00, 0x00, 0x01, 0x01};
+
+void UpdateInhibits()
+{
+    unsigned char inhibits = DEFAULT_INHIBITS;
+    unsigned long total_payout;
+
+    total_payout = _notes_table[2]*100 + _notes_table[3]*500;
+    if(500 > (total_payout + _sess_debt))
+    {
+        printf("Inihibit 500RUB note\n");
+        inhibits &= INHIBIT_500_RUB;
+    }
+    else
+    {
+        printf("Allow 500RUB note\n");
+        inhibits |= ALLOW_500_RUB;
+    }
+
+    if(1000 > (total_payout + _sess_debt))
+    {
+        printf("Inihibit 1000RUB note\n");
+        inhibits &= INHIBIT_1000_RUB;
+    }
+    else
+    {
+        printf("Allow 1000RUB note\n");
+        inhibits |= ALLOW_1000_RUB;
+    }
+
+	if (ssp_set_inhibits(_ssp_setup,inhibits,0xFF) != SSP_RESPONSE_OK)
+	{
+	    printf("Inhibits Failed\n");
+        return;
+	}
+}
 
 void ProcessBilling(unsigned long event_data)
 {
 	FILE *file;
 	char buffer[128];
+	unsigned int ssp_response = 0x00;
+    unsigned int payout_amount = 0;
+
 
 	memset(buffer, 0, 128);
 	printf("Process credits\n");
+
 	switch(event_data)
 	{
 		case 1:
@@ -32,9 +78,11 @@ void ProcessBilling(unsigned long event_data)
 			break;
 		case 3:
 			_sess_amount += 100;
+			_notes_table[2]++;
 			break;
 		case 4:
 			_sess_amount += 500;
+			_notes_table[3]++;
 			break;
 		case 5:
 			_sess_amount += 1000;
@@ -44,10 +92,53 @@ void ProcessBilling(unsigned long event_data)
 			break;
 
 	}
-	printf("Session amount: %lu\n", _sess_amount);
+	// save to file for IPC with GUI
+	printf("SESSION AMOUNT: %lu\n", _sess_amount);
 	file = fopen(SESSION_BILLING_FILE, "w");
 	fprintf(file, "%lu\n", _sess_amount);
 	fclose(file);
+
+	//current user debt
+	_sess_debt = (int)_sess_cost - (int)_sess_amount;
+	printf("SESSION DEBT: %i\n", _sess_debt);
+
+	/*
+	if(_sess_debt < 0)
+    {
+        payout_amount = ((unsigned int)(-1 * _sess_debt)) * 100;
+        printf("PAYOUT AMOUNT: %lu\n", payout_amount);
+
+
+        //usleep(500000); //500 ms delay between polls
+        ssp_response = ssp_payout_amount(_ssp_setup, 30000);
+        if(ssp_response == SSP_RESPONSE_OK)
+        {
+            printf("BasicValidator: payout process started\n");
+            //stop session
+            file = fopen(SESSION_END_FILE, "w");
+            fclose(file);
+        }
+        else {
+            printf("Patout Error\n");
+            printf("SSP_RESPONSE: 0x%02X\n", ssp_response);
+        }
+    }
+    else if(_sess_debt == 0)
+    {
+        printf("END WITHOUT PAYOUT\n");
+        file = fopen(SESSION_END_FILE, "w");
+        fclose(file);
+        // stop main loop
+        _is_sess_processing = 0x00;
+    }
+    */
+}
+
+void StopSession()
+{
+	FILE *file;
+    file = fopen(SESSION_END_FILE, "w");
+    fclose(file);
 }
 
 void ParsePoll(SSP_POLL_DATA * poll)
@@ -84,6 +175,7 @@ void ParsePoll(SSP_POLL_DATA * poll)
 			break;
 		case SSP_POLL_DISPENSED:
 			_is_sess_processing = 0;
+			StopSession();
 			printf("Dispensed\n");
 			break;
 		case SSP_POLL_SAFE_JAM:
@@ -202,6 +294,9 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
 	ssp_setup.SSPAddress = ssp_address;
 	ssp_setup.EncryptionStatus = NO_ENCRYPTION;
 
+	_ssp_setup = ssp_setup;
+
+
     //check validator is present
 	if (ssp_sync(ssp_setup) != SSP_RESPONSE_OK)
 	{
@@ -228,13 +323,6 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
         printf("Higher Protocol Failed\n");
         return;
     }
-
-    //set the inhibits (disable: 10, 5000 RUB notes)
-	if (ssp_set_inhibits(ssp_setup,0x1E,0xFF) != SSP_RESPONSE_OK)
-	{
-	    printf("Inhibits Failed\n");
-        return;
-	}
 
 	// payout setup code
 	if(ssp_enable_payout_device(ssp_setup) != SSP_RESPONSE_OK)
@@ -291,6 +379,15 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
 		return;
 	}
 
+    //set the inhibits (disable: 10, 5000 RUB notes)
+    UpdateInhibits();
+    /*
+	if (ssp_set_inhibits(ssp_setup,DEFAULT_INHIBITS,0xFF) != SSP_RESPONSE_OK)
+	{
+	    printf("Inhibits Failed\n");
+        return;
+	}
+	*/
 
 	//interrupt loop by global flag
 	while (_is_sess_processing)
@@ -311,8 +408,7 @@ void RunValidator(SSP_PORT port, const unsigned char ssp_address)
 	    ParsePoll(&poll);
         usleep(500000); //500 ms delay between polls
 	}
-	if(!_is_sess_processing)
-		printf("BasicValidator: session end by payout complete\n");
+	printf("STOP MAIN LOOP\n");
 }
 
 int main(int argc, char *argv[])
@@ -320,10 +416,10 @@ int main(int argc, char *argv[])
     int ssp_address;
 	SSP_PORT port;
 
-	memset(_notes_table, 0x00, sizeof(unsigned int) * 12);
+	memset(_notes_table, 0x00, sizeof(unsigned int) * 6);
 
     //check for command line arguments - first is port, second is ssp address
-	if (argc <= 2)
+	if (argc <= 3)
 	{
 	    printf("Usage: BasicValidator <port> <sspaddress>\n");
 	    return 1;
@@ -342,6 +438,10 @@ int main(int argc, char *argv[])
     ssp_address = atoi(argv[2]);
     printf("SSP ADDRESS: %d\n",ssp_address);
 
+    _sess_cost = atoi(argv[3]);
+    _sess_debt = _sess_cost;
+    printf("SESSION COST: %lu\n", _sess_cost);
+    printf("SESSION DEBT: %lu\n", _sess_debt);
 
     //run the validator
 	RunValidator(port,ssp_address);
